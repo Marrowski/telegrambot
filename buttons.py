@@ -8,9 +8,7 @@ btn = [
     ]
     ]
 
-btn_dice = [[
-    types.KeyboardButton(text='6'),
-    types.KeyboardButton(text='12'),
-    types.KeyboardButton(text='24')
+btn_menu = [[
+    types.KeyboardButton(text='Назад до меню')
 ]]
 
