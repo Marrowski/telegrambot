@@ -14,7 +14,8 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 
-from buttons import btn, btn_menu
+from buttons import btn, btn_menu, btn_weather, btn_popular_city
+from weather import get_weather_req, execute_weather
 from asyncio import sleep
 
 
@@ -29,6 +30,8 @@ class StateAction(StatesGroup):
     dice = State()
     menu = State()
     pass_len = State()
+    weather = State(),
+    waiting_for_city = State()
     
 
 @dp.message(CommandStart())
@@ -48,7 +51,7 @@ async def help_command(message: types.Message, state: FSMContext):
     await message.answer('Обери, будь ласка, дію', reply_markup=keyboard)
     
     
-@dp.message(lambda message: message.text == 'Кинути кубик'.strip().capitalize())
+@dp.message(lambda message: message.text == 'Кинути кубик')
 async def roll_dice(message: types.Message, state=FSMContext):
     keyboard_dice = types.ReplyKeyboardMarkup(keyboard=btn_menu, resize_keyboard=True)
     await state.set_state(StateAction.dice)
@@ -63,7 +66,7 @@ async def roll_dice(message: types.Message, state=FSMContext):
     await message.answer(reply_markup=keyboard_dice)
     
     
-@dp.message(lambda message: message.text == 'Дізнатися поточну дату/час'.strip().capitalize())
+@dp.message(lambda message: message.text == 'Дізнатися поточну дату/час')
 async def get_time(message: types.Message, state=FSMContext):
     await state.set_state(StateAction.menu)
     keyboard_menu = types.ReplyKeyboardMarkup(keyboard=btn_menu, resize_keyboard=True)
@@ -73,7 +76,7 @@ async def get_time(message: types.Message, state=FSMContext):
     await message.answer(reply_markup=keyboard_menu)
     
     
-@dp.message(lambda message: message.text == 'Згенерувати рандомний пароль'.capitalize().strip())
+@dp.message(lambda message: message.text == 'Згенерувати рандомний пароль')
 async def generate_password(message: types.Message, state=FSMContext):
     await message.answer(f'Введіть, будь ласка довжину паролю(1-9):')
     
@@ -91,13 +94,25 @@ async def len_pass(message: types.Message, state=FSMContext):
     else: 
         await message.answer(random_pass)
         
-        
-        
-    
-    
-    
+
+@dp.message(Command('weather'))
+async def get_weather(message: types.Message, state=FSMContext):
+    await state.set_state(StateAction.weather)
+    keyboard_menu = types.ReplyKeyboardMarkup(keyboard=btn_weather, resize_keyboard=True)
+    await message.answer(f'{message.from_user.first_name}, тут ти можеш дізнатися погоду для твого міста,або вибрати із популярних.')
+    await message.answer(reply_markup=keyboard_menu)
+
+
+@dp.message(lambda message: message.text == 'Дізнатися погоду для свого міста')
+async def get_weather_city(message: types.Message, state=FSMContext):
+    await message.answer(f'{message.from_user.first_name}, введи своє місто, або вибери з популярних')
+    await state.set_state(StateAction.waiting_for_city)
     
 
+@dp.message(StateAction.waiting_for_city)
+async def process_req_city(message: types.Message, state:FSMContext):
+    await execute_weather(message)
+    await state.clear()
   
 async def main() -> None:
     bot = Bot(token=TOKEN)
