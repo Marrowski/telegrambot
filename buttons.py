@@ -8,7 +8,7 @@ btn = [
     ]
     ]
 
-btn_menu = [[
+btn_back = [[
     types.KeyboardButton(text='Назад до меню')
 ]]
 
@@ -22,4 +22,10 @@ btn_popular_city = [[
     types.KeyboardButton(text='Нью Йорк'),
     types.KeyboardButton(text='Париж')
 ]]
+
+btn_main = [[
+    types.KeyboardButton(text='Меню'),
+    types.KeyboardButton(text='Погода')
+]]
+
 
